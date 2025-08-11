@@ -35,8 +35,6 @@ const validationTypes = [
 
 const FieldConfigPanel: React.FC<FieldConfigPanelProps> = ({
   selectedFieldId,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onFieldUpdated,
 }) => {
   const { currentForm, updateField } = useFormState();
   const [localField, setLocalField] = useState<FormField | null>(null);
