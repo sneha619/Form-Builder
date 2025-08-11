@@ -1,8 +1,11 @@
 import type { FormField, FormData, ValidationError } from '../types/form';
 
-export const validateField = (field: FormField, value: string | number | boolean | Date | null | undefined): ValidationError[] => {
+export const validateField = (
+  field: FormField,
+  value: string | number | boolean | Date | null | undefined
+): ValidationError[] => {
   const errors: ValidationError[] = [];
-  
+
   for (const rule of field.validationRules) {
     let isValid = true;
     const errorMessage = rule.message;
@@ -15,30 +18,30 @@ export const validateField = (field: FormField, value: string | number | boolean
           isValid = value !== null && value !== undefined && value !== '';
         }
         break;
-        
+
       case 'notEmpty':
         isValid = value !== null && value !== undefined && String(value).trim() !== '';
         break;
-        
+
       case 'minLength':
         if (value && rule.value) {
           isValid = String(value).length >= Number(rule.value);
         }
         break;
-        
+
       case 'maxLength':
         if (value && rule.value) {
           isValid = String(value).length <= Number(rule.value);
         }
         break;
-        
+
       case 'email':
         if (value) {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           isValid = emailRegex.test(String(value));
         }
         break;
-        
+
       case 'password':
         if (value) {
           // Password must be at least 8 characters and contain a number
@@ -46,7 +49,7 @@ export const validateField = (field: FormField, value: string | number | boolean
           isValid = password.length >= 8 && /\d/.test(password);
         }
         break;
-        
+
       default:
         break;
     }
@@ -64,14 +67,17 @@ export const validateField = (field: FormField, value: string | number | boolean
 
 export const validateForm = (fields: FormField[], formData: FormData): ValidationError[] => {
   const errors: ValidationError[] = [];
-  
+
   for (const field of fields) {
-    if (!field.isDerived) { // Don't validate derived fields directly
-      const fieldErrors = validateField(field, formData[field.id] as string | number | boolean | Date | null);
+    if (!field.isDerived) {
+      const fieldErrors = validateField(
+        field,
+        formData[field.id] as string | number | boolean | Date | null
+      );
       errors.push(...fieldErrors);
     }
   }
-  
+
   return errors;
 };
 
@@ -79,28 +85,28 @@ export const calculateDerivedField = (
   field: FormField,
   formData: FormData,
   allFields: FormField[]
-): string | number | Date | null => {
+): string | number | null => {
   if (!field.isDerived || !field.derivedField) {
     return null;
   }
 
   try {
-    // Create a safe context for formula evaluation
-    const context: { [key: string]: string | number | Date | null } = {};
-    
-    // Add parent field values to context
+    // Context can hold values or helper functions
+    const context: { [key: string]: string | number | null | ((value: string | number | null, ...args: (string | number)[]) => string | number | null) } = {};
+
+    // Add parent field values
     for (const parentFieldId of field.derivedField.parentFields) {
       const parentField = allFields.find(f => f.id === parentFieldId);
       if (parentField) {
         const fieldValue = formData[parentFieldId];
-        // Convert boolean/array values to string/number to match context type constraints
-        context[parentField.label.replace(/\s+/g, '_')] = typeof fieldValue === 'boolean' || Array.isArray(fieldValue) 
-          ? String(fieldValue)
-          : fieldValue as string | number | Date | null;
+        context[parentField.label.replace(/\s+/g, '_')] =
+          typeof fieldValue === 'boolean' || Array.isArray(fieldValue)
+            ? String(fieldValue)
+            : (fieldValue as string | number | null);
       }
     }
-    
-    // Add some helper functions
+
+    // Math helpers
     const mathContext = {
       abs: Math.abs,
       ceil: Math.ceil,
@@ -109,40 +115,57 @@ export const calculateDerivedField = (
       max: Math.max,
       min: Math.min,
       pow: Math.pow,
-      sqrt: Math.sqrt
+      sqrt: Math.sqrt,
     };
     Object.assign(context, mathContext);
-    // Provide a safe Date constructor wrapper that returns null on invalid dates
-    // Add functions as wrappers that return values of the expected type
-    context.parseDate = (dateStr: string) => {
-      const date = new Date(dateStr);
-      return isNaN(date.getTime()) ? null : date;
+
+    // Safe date parser
+    context.parseDate = (value: string | number | null): number | null => {
+      if (value === null) return null;
+      const date = new Date(value as string | number);
+      return isNaN(date.getTime()) ? null : date.getTime();
     };
-    
-    // Wrap parseInt and parseFloat to return values instead of functions
-    context.parseInt = (str: string, radix?: number) => parseInt(str, radix);
-    context.parseFloat = (str: string) => parseFloat(str);
-    
-    // Simple age calculation example
+
+    // Safe parseInt and parseFloat wrappers
+    context.parseInt = (value: string | number | null, radix?: string | number): string | number | null => {
+      if (value === null || value === undefined) return null;
+      const result = Number.parseInt(String(value), Number(radix) || undefined);
+      return isNaN(result) ? null : result;
+    };
+
+    context.parseFloat = (value: string | number | null): string | number | null => {
+      if (value === null || value === undefined) return null;
+      const result = Number.parseFloat(String(value));
+      return isNaN(result) ? null : result;
+    };
+
+
+    // Example: Age calculation
     if (field.derivedField.formula.includes('calculateAge')) {
       const dateOfBirth = Object.values(context)[0];
-      if (dateOfBirth) {
+      if (dateOfBirth && typeof dateOfBirth === 'string') {
         const today = new Date();
         const birthDate = new Date(dateOfBirth);
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-          age--;
+        if (!isNaN(birthDate.getTime())) {
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const monthDiff = today.getMonth() - birthDate.getMonth();
+          if (
+            monthDiff < 0 ||
+            (monthDiff === 0 && today.getDate() < birthDate.getDate())
+          ) {
+            age--;
+          }
+          return age;
         }
-        return age;
       }
+      return null;
     }
-    
-    // For other formulas, use Function constructor (in a real app, you'd want a safer evaluator)
+
+    // Evaluate formula
     const func = new Function(...Object.keys(context), `return ${field.derivedField.formula}`);
     return func(...Object.values(context));
   } catch (error) {
     console.error('Error calculating derived field:', error);
-    return 'Error';
+    return 'Error' as string;
   }
 };

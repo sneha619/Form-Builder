@@ -38,7 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-subtle dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
       <AppBar position="static" color="transparent" elevation={0} className="border-b bg-white/90 dark:bg-gray-800/90 backdrop-blur sticky top-0 z-50 shadow-sm">
         <Toolbar className="container mx-auto px-4 py-2">
