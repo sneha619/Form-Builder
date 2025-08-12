@@ -98,79 +98,125 @@ const CreateForm: React.FC = () => {
   const canPreview = isFormNameValid && currentForm.fields.length > 0;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-8 p-4">
       {/* Enhanced Header */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5 rounded-2xl border border-border/50">
-        <div className="relative p-8">
+      <Card sx={{ 
+        borderRadius: 3,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+        background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(255, 255, 255, 1) 100%)',
+        border: '1px solid',
+        borderColor: 'divider'
+      }}>
+        <CardContent sx={{ p: 4 }}>
           <div className="flex items-center space-x-4 mb-6">
-            <div className="p-3 bg-primary rounded-xl shadow-lg">
-              <Hammer className="w-7 h-7 text-primary-foreground" />
+            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+              <Hammer className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
                 Form Builder
               </h1>
-              <p className="text-muted-foreground text-lg">Create dynamic forms with custom fields and validations</p>
+              <p className="text-gray-600 dark:text-gray-300 text-lg">Create dynamic forms with custom fields and validations</p>
             </div>
           </div>
 
           {/* Form Name Section */}
-          <div className="bg-background/80 backdrop-blur-sm rounded-xl border border-border/50 p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
-              <div className="lg:col-span-2">
-                <TextField
-                   id="formName"
-                   label="Form Name *"
-                   value={currentForm.name || ''}
-                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormNameChange(e.target.value)}
-                   placeholder="Enter a descriptive name for your form..."
-                   fullWidth
-                   variant="outlined"
-                   size="medium"
-                 />
-              </div>
-              
-              <div className="flex items-center justify-between lg:justify-end gap-3">
-                <div className="flex items-center gap-2">
-                  <Chip 
-                     label={`${currentForm.fields.length} field${currentForm.fields.length !== 1 ? 's' : ''}`}
-                     color={currentForm.fields.length > 0 ? "primary" : "default"}
-                     size="small"
+          <Card sx={{ 
+            mt: 3,
+            borderRadius: 2,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            border: '1px solid',
+            borderColor: 'divider'
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
+                <div className="lg:col-span-2">
+                  <TextField
+                     id="formName"
+                     label="Form Name *"
+                     value={currentForm.name || ''}
+                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFormNameChange(e.target.value)}
+                     placeholder="Enter a descriptive name for your form..."
+                     fullWidth
+                     variant="outlined"
+                     size="medium"
+                     error={!isFormNameValid && currentForm.name !== undefined}
+                     helperText={!isFormNameValid && currentForm.name !== undefined ? 'Form name is required' : ''}
+                     sx={{
+                       '& .MuiOutlinedInput-root': {
+                         borderRadius: 2,
+                         '&:hover fieldset': {
+                           borderColor: 'primary.main',
+                         },
+                       },
+                     }}
                    />
                 </div>
                 
-                <div className="flex gap-2">
-                  {canPreview && (
-                    <Button
-                       variant="outlined"
-                       startIcon={<Eye />}
-                       onClick={handlePreview}
-                       disabled={!canPreview}
-                       className="border-2 hover:bg-primary/5 transition-all duration-300 font-medium"
-                     >
-                       Preview
-                     </Button>
-                  )}
+                <div className="flex items-center justify-between lg:justify-end gap-3">
+                  <div className="flex items-center gap-2">
+                    <Chip 
+                       label={`${currentForm.fields.length} field${currentForm.fields.length !== 1 ? 's' : ''}`}
+                       color={currentForm.fields.length > 0 ? "primary" : "default"}
+                       size="small"
+                       sx={{ fontWeight: 500 }}
+                     />
+                  </div>
                   
-                  <Button
-                     variant="contained"
-                     color="primary"
-                     onClick={handleSaveForm}
-                     disabled={!isFormNameValid}
-                     startIcon={<Save />}
-                     className="shadow-md hover:shadow-lg transition-all duration-300 font-medium"
-                   >
-                     Save Form
-                   </Button>
+                  <div className="flex gap-2">
+                    {canPreview && (
+                      <Button
+                         variant="outlined"
+                         startIcon={<Eye />}
+                         onClick={handlePreview}
+                         disabled={!canPreview}
+                         sx={{
+                           borderRadius: 2,
+                           fontWeight: 500,
+                           textTransform: 'none',
+                           px: 3,
+                           '&:hover': {
+                             transform: 'translateY(-1px)',
+                             boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                           },
+                           transition: 'all 0.2s'
+                         }}
+                       >
+                         Preview
+                       </Button>
+                    )}
+                    
+                    <Button
+                       variant="contained"
+                       color="primary"
+                       onClick={handleSaveForm}
+                       disabled={!isFormNameValid}
+                       startIcon={<Save />}
+                       sx={{
+                         borderRadius: 2,
+                         fontWeight: 500,
+                         textTransform: 'none',
+                         px: 3,
+                         boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
+                         '&:hover': {
+                           transform: 'translateY(-1px)',
+                           boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)'
+                         },
+                         transition: 'all 0.2s'
+                       }}
+                     >
+                       Save Form
+                     </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            </CardContent>
+          </Card>
+        </CardContent>
+      </Card>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Form Builder Panel */}
         <div className="lg:col-span-2">
           <FormBuilderPanel

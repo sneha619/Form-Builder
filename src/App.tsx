@@ -43,7 +43,7 @@ const App = () => (
           <BrowserRouter>
             <Layout>
               <Routes>
-                <Route path="/" element={<MyForms />} />
+                <Route path="/" element={<CreateForm />} />
                 <Route path="/create" element={<CreateForm />} />
                 <Route path="/preview" element={<PreviewForm />} />
                 <Route path="/myforms" element={<MyForms />} />

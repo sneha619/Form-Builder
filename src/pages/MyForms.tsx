@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, Button, Chip, Typography } from '@mui/material';
+import { Card, CardContent, CardHeader, Button, Chip, Typography, Box, Container } from '@mui/material';
 import { useFormState } from '../hooks/useFormStateHook';
 import { FormSchema } from '../types/form';
 import { useSnackbar } from 'notistack';
@@ -17,6 +17,12 @@ const MyForms: React.FC = () => {
   const navigate = useNavigate();
   const { savedForms, loadForm, deleteForm, refreshSavedForms } = useFormState();
   const { enqueueSnackbar } = useSnackbar();
+  
+  // Sort forms by updated date (most recent first)
+  const sortedForms = [...savedForms].sort((a, b) => {
+    return new Date(b.updatedAt || b.createdAt).getTime() - 
+           new Date(a.updatedAt || a.createdAt).getTime();
+  });
 
   useEffect(() => {
     // Refresh forms from localStorage
@@ -43,148 +49,341 @@ const MyForms: React.FC = () => {
 
   if (savedForms.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto">
+      <Container maxWidth="md" sx={{ py: 4 }}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">My Forms</h1>
-            <p className="text-muted-foreground mt-2">Manage your saved forms</p>
-          </div>
-        </div>
-
-        {/* Empty State */}
-        <Card className="text-center py-12 shadow-md hover:shadow-lg transition-shadow duration-300 border border-gray-100 rounded-xl overflow-hidden">
-          <CardContent>
-            <div className="mx-auto w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-6 animate-pulse">
-              <DescriptionIcon className="w-12 h-12 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">No forms yet</h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Get started by creating your first dynamic form with custom fields and validations.
-            </p>
-            <Link to="/create">
-              <Button 
-                variant="contained" 
-                color="primary" 
-                startIcon={<AddIcon />}
-                className="shadow-md hover:shadow-lg transition-all"
-              >
-                Create Your First Form
-              </Button>
-            </Link>
+        <Card sx={{ 
+          mb: 4, 
+          borderRadius: 3,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+          border: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Box sx={{ 
+                p: 2, 
+                bgcolor: 'primary.main', 
+                borderRadius: 2, 
+                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)' 
+              }}>
+                <DescriptionIcon sx={{ fontSize: 32, color: 'white' }} />
+              </Box>
+              <Box>
+                <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>My Forms</Typography>
+                <Typography variant="body1" color="text.secondary">Manage your saved forms</Typography>
+              </Box>
+            </Box>
           </CardContent>
         </Card>
-      </div>
+
+        {/* Empty State */}
+        <Card sx={{ 
+          textAlign: 'center',
+          borderRadius: 3,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+          border: '1px solid',
+          borderColor: 'divider',
+          '&:hover': {
+            boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
+            transform: 'translateY(-2px)'
+          },
+          transition: 'all 0.3s'
+        }}>
+          <CardContent sx={{ py: 8, px: 4 }}>
+            <Box sx={{ 
+              width: 112, 
+              height: 112, 
+              bgcolor: 'primary.light', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              mx: 'auto', 
+              mb: 4,
+              boxShadow: '0 8px 24px rgba(25, 118, 210, 0.2)'
+            }}>
+              <DescriptionIcon sx={{ fontSize: 56, color: 'primary.main' }} />
+            </Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 2 }}>No forms yet</Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400, mx: 'auto', lineHeight: 1.6 }}>
+              Get started by creating your first dynamic form with custom fields and validations. You can preview, edit, and share your forms anytime.
+            </Typography>
+            <Button 
+              component={Link}
+              to="/create"
+              variant="contained" 
+              color="primary" 
+              startIcon={<AddIcon />}
+              size="large"
+              sx={{
+                borderRadius: 3,
+                px: 4,
+                py: 1.5,
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                textTransform: 'none',
+                boxShadow: '0 6px 20px rgba(25, 118, 210, 0.3)',
+                '&:hover': {
+                  boxShadow: '0 8px 28px rgba(25, 118, 210, 0.4)',
+                  transform: 'translateY(-2px)'
+                },
+                transition: 'all 0.2s'
+              }}
+            >
+              Create Your First Form
+            </Button>
+          </CardContent>
+        </Card>
+      </Container>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Forms</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">
-            {savedForms.length} form{savedForms.length !== 1 ? 's' : ''} saved
-          </p>
-        </div>
-        <Link to="/create">
-          <Button 
-            variant="contained" 
-            color="primary" 
-            startIcon={<AddIcon />}
-            className="shadow-md hover:shadow-lg transition-all"
-          >
-            Create New Form
-          </Button>
-        </Link>
-      </div>
+      <Card sx={{ 
+        mb: 4, 
+        borderRadius: 3,
+        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+        border: '1px solid',
+        borderColor: 'divider'
+      }}>
+        <CardContent sx={{ p: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Box sx={{ 
+                p: 2, 
+                bgcolor: 'primary.main', 
+                borderRadius: 2, 
+                boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)' 
+              }}>
+                <DescriptionIcon sx={{ fontSize: 32, color: 'white' }} />
+              </Box>
+              <Box>
+                <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>My Forms</Typography>
+                <Typography variant="body1" color="text.secondary">
+                  {savedForms.length} {savedForms.length === 1 ? 'form' : 'forms'} saved
+                </Typography>
+              </Box>
+            </Box>
+            <Button 
+              component={Link}
+              to="/create"
+              variant="contained" 
+              color="primary" 
+              startIcon={<AddIcon />}
+              size="large"
+              sx={{
+                borderRadius: 2,
+                px: 3,
+                py: 1.5,
+                fontWeight: 600,
+                textTransform: 'none',
+                boxShadow: '0 4px 16px rgba(25, 118, 210, 0.3)',
+                '&:hover': {
+                  boxShadow: '0 6px 24px rgba(25, 118, 210, 0.4)',
+                  transform: 'translateY(-1px)'
+                },
+                transition: 'all 0.2s'
+              }}
+            >
+              Create New Form
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
 
       {/* Forms Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-        {savedForms.map((form: FormSchema) => (
-          <Card key={form.id} className="hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <Typography variant="h6" className="text-lg truncate">{form.name}</Typography>
-                   <div className="flex items-center space-x-2 mt-2">
-                     <Chip 
-                       label={`${form.fields.length} field${form.fields.length !== 1 ? 's' : ''}`}
-                       size="small"
-                       variant="filled"
-                     />
-                     {form.fields.some(f => f.isDerived) && (
-                       <Chip label="Derived" size="small" variant="outlined" />
-                     )}
-                  </div>
-                </div>
-              </div>
+      <Box sx={{ 
+        display: 'grid', 
+        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+        gap: 3,
+        animation: 'fadeIn 0.6s ease-in-out'
+      }}>
+        {sortedForms.map((form: FormSchema) => (
+          <Card 
+            key={form.id} 
+            sx={{
+              borderRadius: 3,
+              border: '1px solid',
+              borderColor: 'divider',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+              transition: 'all 0.3s',
+              overflow: 'hidden',
+              '&:hover': {
+                boxShadow: '0 12px 32px rgba(0,0,0,0.12)',
+                transform: 'translateY(-4px)'
+              }
+            }}
+          >
+            <Box sx={{ height: 8, bgcolor: 'primary.main' }} />
+            <CardHeader sx={{ pb: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontWeight: 700, 
+                      mb: 1.5,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    {form.name}
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+                    <Chip 
+                      label={`${form.fields.length} field${form.fields.length !== 1 ? 's' : ''}`}
+                      size="small"
+                      color="primary"
+                      sx={{ borderRadius: 2, fontWeight: 600 }}
+                    />
+                    {form.fields.some(f => f.isDerived) && (
+                      <Chip 
+                        label="Derived" 
+                        size="small" 
+                        variant="outlined" 
+                        sx={{ borderRadius: 2 }}
+                      />
+                    )}
+                  </Box>
+                </Box>
+              </Box>
             </CardHeader>
             
-            <CardContent className="pt-0">
-              <div className="text-sm text-muted-foreground mb-4">
-                <p>Created: {format(new Date(form.createdAt), 'MMM dd, yyyy')}</p>
+            <CardContent sx={{ pt: 0 }}>
+              <Box sx={{ mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Box sx={{ 
+                    width: 12, 
+                    height: 12, 
+                    bgcolor: 'success.light', 
+                    borderRadius: '50%' 
+                  }} />
+                  <Typography variant="body2" color="text.secondary">
+                    Created: {format(new Date(form.createdAt), 'MMM dd, yyyy')}
+                  </Typography>
+                </Box>
                 {form.updatedAt !== form.createdAt && (
-                  <p>Updated: {format(new Date(form.updatedAt), 'MMM dd, yyyy')}</p>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ 
+                      width: 12, 
+                      height: 12, 
+                      bgcolor: 'info.light', 
+                      borderRadius: '50%' 
+                    }} />
+                    <Typography variant="body2" color="text.secondary">
+                      Updated: {format(new Date(form.updatedAt), 'MMM dd, yyyy')}
+                    </Typography>
+                  </Box>
                 )}
-              </div>
+              </Box>
 
               {/* Field Types Preview */}
-              <div className="flex flex-wrap gap-1 mb-4">
-                {Array.from(new Set(form.fields.map(f => f.type))).slice(0, 4).map((type, index) => (
-                   <Chip 
-                     key={`${type}-${index}`} 
-                     label={type} 
-                     size="small" 
-                     variant="outlined" 
-                     className="text-xs capitalize"
-                   />
-                 ))}
-                 {Array.from(new Set(form.fields.map(f => f.type))).length > 4 && (
-                   <Chip 
-                     label={`+${Array.from(new Set(form.fields.map(f => f.type))).length - 4} more`}
-                     size="small" 
-                     variant="outlined" 
-                     className="text-xs"
-                   />
-                 )}
-              </div>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5, color: 'text.primary' }}>
+                  Field Types:
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                  {Array.from(new Set(form.fields.map(f => f.type))).slice(0, 4).map((type, index) => (
+                    <Chip 
+                      key={`${type}-${index}`} 
+                      label={type} 
+                      size="small" 
+                      variant="outlined" 
+                      sx={{ 
+                        fontSize: '0.7rem',
+                        height: 24,
+                        textTransform: 'capitalize',
+                        borderRadius: 2,
+                        borderColor: 'divider'
+                      }}
+                    />
+                  ))}
+                  {Array.from(new Set(form.fields.map(f => f.type))).length > 4 && (
+                    <Chip 
+                      label={`+${Array.from(new Set(form.fields.map(f => f.type))).length - 4} more`}
+                      size="small" 
+                      variant="outlined" 
+                      sx={{ 
+                        fontSize: '0.7rem',
+                        height: 24,
+                        borderRadius: 2,
+                        borderColor: 'divider'
+                      }}
+                    />
+                  )}
+                </Box>
+              </Box>
 
               {/* Actions */}
-              <div className="flex items-center space-x-2">
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1, 
+                pt: 2, 
+                borderTop: '1px solid',
+                borderColor: 'divider'
+              }}>
                 <Button
-                   variant="contained"
-                   size="small"
-
-                   onClick={() => handlePreviewForm(form.id)}
-                   startIcon={<VisibilityIcon />}
-                   className="flex-1"
-                 >
-                   Preview
-                 </Button>
-                 <Button
-                   variant="outlined"
-                   size="small"
-                   onClick={() => handleEditForm(form.id)}
-                   startIcon={<EditIcon />}
-                 >
-                   Edit
-                 </Button>
-                 <Button
-                   variant="outlined"
-                   size="small"
-                   onClick={() => handleDeleteForm(form.id, form.name)}
-                   color="error"
-                 >
-                   <DeleteIcon />
-                 </Button>
-              </div>
+                  variant="contained"
+                  size="small"
+                  onClick={() => handlePreviewForm(form.id)}
+                  startIcon={<VisibilityIcon />}
+                  sx={{
+                    flex: 1,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    boxShadow: '0 2px 8px rgba(25, 118, 210, 0.3)',
+                    '&:hover': {
+                      boxShadow: '0 4px 16px rgba(25, 118, 210, 0.4)'
+                    }
+                  }}
+                >
+                  Preview
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleEditForm(form.id)}
+                  startIcon={<EditIcon />}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    borderColor: 'divider',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      bgcolor: 'primary.light'
+                    }
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleDeleteForm(form.id, form.name)}
+                  color="error"
+                  sx={{
+                    borderRadius: 2,
+                    minWidth: 'auto',
+                    px: 1.5,
+                    '&:hover': {
+                      bgcolor: 'error.light'
+                    }
+                  }}
+                >
+                  <DeleteIcon />
+                </Button>
+              </Box>
             </CardContent>
           </Card>
         ))}
-      </div>
-    </div>
+      </Box>
+    </Container>
   );
 };
 
